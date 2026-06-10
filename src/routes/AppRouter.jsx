@@ -4,6 +4,7 @@ import { AuthContext } from '../contexts/AuthContext.jsx';
 import { ProtectedRoute } from './ProtectedRoute.jsx';
 import Layout from '../components/Layout.jsx';
 import Login from '../pages/Login.jsx';
+import WelcomePage from '../pages/Welcome.jsx';
 
 // Admin
 import AdminDashboard      from '../pages/admin/Dashboard.jsx';
@@ -53,8 +54,9 @@ export default function AppRouter() {
 
   return (
     <Routes>
+      <Route path="/welcome" element={<WelcomePage />} />
       <Route path="/login" element={<Login />} />
-      <Route path="/" element={homeRedirect()} />
+      <Route path="/" element={<WelcomePage />} />
 
       {/* ADMIN */}
       <Route path="/admin" element={
