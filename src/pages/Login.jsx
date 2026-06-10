@@ -92,7 +92,7 @@ export default function Login() {
           </button>
         </form>
 
-        <div className="login-hint">Protec INK · Durban · 2025</div>
+        <div className="login-hint">Protec INK · Durban · 2026</div>
       </div>
     </div>
   );
