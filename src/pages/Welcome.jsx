@@ -1,9 +1,28 @@
 import { useNavigate } from 'react-router-dom';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 export default function WelcomePage() {
   const navigate = useNavigate();
   const canvasRef = useRef(null);
+  const [installPrompt, setInstallPrompt] = useState(null);
+  const [showInstall, setShowInstall] = useState(false);
+
+  useEffect(() => {
+    const handler = (e) => {
+      e.preventDefault();
+      setInstallPrompt(e);
+      setShowInstall(true);
+    };
+    window.addEventListener('beforeinstallprompt', handler);
+    return () => window.removeEventListener('beforeinstallprompt', handler);
+  }, []);
+
+  const handleInstall = async () => {
+    if (!installPrompt) return;
+    installPrompt.prompt();
+    const { outcome } = await installPrompt.userChoice;
+    if (outcome === 'accepted') setShowInstall(false);
+  };
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -213,6 +232,38 @@ export default function WelcomePage() {
             ))}
           </div>
         </div>
+        
+        {/* Install banner */}
+        {showInstall && (
+          <div style={{
+            position: 'fixed', bottom: 24, left: '50%', transform: 'translateX(-50%)',
+            background: '#fff', borderRadius: 12, padding: '14px 20px',
+            display: 'flex', alignItems: 'center', gap: 14,
+            boxShadow: '0 8px 32px rgba(0,0,0,0.25)', zIndex: 100,
+            maxWidth: 380, width: '90%',
+          }}>
+            <div style={{ fontSize: 28 }}>📲</div>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: 13, fontWeight: 600, color: '#111e3d' }}>
+                Install Protec INK
+              </div>
+              <div style={{ fontSize: 11, color: '#666', marginTop: 2 }}>
+                Add to your home screen for quick access
+              </div>
+            </div>
+            <button onClick={handleInstall} style={{
+              background: '#c8102e', color: '#fff', border: 'none',
+              borderRadius: 7, padding: '8px 16px', fontSize: 12,
+              fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap',
+            }}>
+              Install
+            </button>
+            <button onClick={() => setShowInstall(false)} style={{
+              background: 'none', border: 'none', color: '#999',
+              fontSize: 18, cursor: 'pointer', padding: '0 4px',
+            }}>×</button>
+          </div>
+        )}
 
         {/* Bottom stats bar */}
         <div style={{
