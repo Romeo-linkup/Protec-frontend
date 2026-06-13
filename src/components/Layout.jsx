@@ -40,6 +40,7 @@ const NAV = {
       { id: 'progress',   path: '/tutor/progress',    icon: 'ti-trending-up',      label: 'Progress tracker' },
       { id: 'awards',     path: '/tutor/awards',      icon: 'ti-award',            label: 'Awards' },
       { id: 'lesson-register', path: '/tutor/lesson-register', icon: 'ti-notebook', label: 'Lesson register' },
+      { id: 'activity-log', path: '/tutor/activity-log', icon: 'ti-calendar-event', label: 'Activity log' },
       { id: 'change-password', path: '/tutor/change-password', icon: 'ti-lock', label: 'Change password' },
     ]},
   ],
@@ -50,6 +51,7 @@ const NAV = {
     ]},
     { sec: 'Explore', items: [
       { id: 'awards',     path: '/learner/awards',  icon: 'ti-award',     label: 'Awards' },
+      { id: 'activity-log', path: '/learner/activity-log', icon: 'ti-calendar-event', label: 'Activity log' },
       { id: 'change-password', path: '/learner/change-password', icon: 'ti-lock', label: 'Change password' },
     ]},
   ],
@@ -57,6 +59,7 @@ const NAV = {
     { sec: 'My Child', items: [
       { id: 'parent-report',   path: '/parent',                icon: 'ti-report', label: 'Progress report' },
       { id: 'notifications',   path: '/parent/notifications',  icon: 'ti-bell',   label: 'Notifications' },
+      { id: 'activity-log',    path: '/parent/activity-log',   icon: 'ti-calendar-event', label: 'Activity log' },
       { id: 'change-password', path: '/parent/change-password', icon: 'ti-lock',  label: 'Change password' },
     ]},
   ],

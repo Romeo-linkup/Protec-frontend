@@ -27,15 +27,18 @@ import TutorAllResults from '../pages/tutor/AllResults.jsx';
 import TutorProgress   from '../pages/tutor/ProgressTracker.jsx';
 import TutorAwards     from '../pages/tutor/Awards.jsx';
 import TutorLessonRegister from '../pages/tutor/LessonRegister.jsx';
+import TutorActivityLog from '../pages/tutor/TutorActivityLog.jsx';
 
 // Learner
 import MyResults    from '../pages/learner/MyResults.jsx';
 import UploadReport from '../pages/learner/UploadReport.jsx';
 import LearnerAwards from '../pages/learner/Awards.jsx';
+import LearnerActivityLog from '../pages/learner/LearnerActivityLog.jsx';
 
 // Parent
 import ParentReport  from '../pages/parent/ProgressReport.jsx';
 import ParentNotifs  from '../pages/parent/Notifications.jsx';
+import ParentActivityLog from '../pages/parent/ParentActivityLog.jsx';
 
 // Shared
 import ChangePassword from '../pages/ChangePassword.jsx';
@@ -89,6 +92,7 @@ export default function AppRouter() {
         <Route path="progress" element={<TutorProgress />} />
         <Route path="awards" element={<TutorAwards />} />
         <Route path="lesson-register" element={<TutorLessonRegister />} />
+        <Route path="activity-log" element={<TutorActivityLog />} />
         <Route path="calendar" element={<CalendarPage />} />
         <Route path="change-password" element={<ChangePassword />} />
       </Route>
@@ -100,6 +104,7 @@ export default function AppRouter() {
         <Route index element={<MyResults />} />
         <Route path="upload" element={<UploadReport />} />
         <Route path="awards" element={<LearnerAwards />} />
+        <Route path="activity-log" element={<LearnerActivityLog />} />
         <Route path="change-password" element={<ChangePassword />} />
       </Route>
 
@@ -109,6 +114,7 @@ export default function AppRouter() {
       }>
         <Route index element={<ParentReport />} />
         <Route path="notifications" element={<ParentNotifs />} />
+        <Route path="activity-log" element={<ParentActivityLog />} />
         <Route path="change-password" element={<ChangePassword />} />
       </Route>
 

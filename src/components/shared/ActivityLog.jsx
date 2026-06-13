@@ -11,7 +11,7 @@ const CAT_COLORS = {
   Other:       'yellow',
 };
 
-export default function AdminActivityLog() {
+export default function ActivityLog() {
   const [events, setEvents]       = useState([]);
   const [loading, setLoading]     = useState(true);
   const [showForm, setShowForm]   = useState(false);
