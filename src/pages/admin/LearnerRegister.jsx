@@ -16,6 +16,8 @@ export default function AdminLearnerRegister() {
   const [saving, setSaving]     = useState(false);
   const [result, setResult]     = useState(null);
   const [error, setError]       = useState('');
+  const [editingId, setEditingId] = useState(null);
+  const [editForm, setEditForm] = useState({});
 
   useEffect(() => { fetchLearners(); }, [grade]);
   useEffect(() => { fetchStaff(); }, []);
@@ -81,6 +83,36 @@ export default function AdminLearnerRegister() {
       setStaff(prev => prev.filter(s => s.id !== userId));
     } catch (err) {
       alert(err.response?.data?.error || 'Failed to delete.');
+    }
+  };
+
+  const handleEditLearner = (learner) => {
+    setEditingId(learner.id);
+    setEditForm({ fullName: learner.full_name, grade: learner.grade, email: learner.email || '' });
+  };
+
+  const handleSaveLearner = async (id) => {
+    try {
+      await api.put(`/learners/${id}`, editForm);
+      setEditingId(null);
+      fetchLearners();
+    } catch (err) {
+      alert(err.response?.data?.error || 'Failed to save changes.');
+    }
+  };
+
+  const handleEditStaff = (member) => {
+    setEditingId(member.id);
+    setEditForm({ fullName: member.full_name, email: member.email || '' });
+  };
+
+  const handleSaveStaff = async (id) => {
+    try {
+      await api.put(`/learners/staff/${id}`, editForm);
+      setEditingId(null);
+      fetchStaff();
+    } catch (err) {
+      alert(err.response?.data?.error || 'Failed to save changes.');
     }
   };
 
@@ -234,19 +266,41 @@ export default function AdminLearnerRegister() {
                   {filteredLearners.length === 0 ? (
                     <tr><td colSpan="5" className="no-data">No learners found.</td></tr>
                   ) : filteredLearners.map(l => (
-                    <tr key={l.id}>
-                      <td>{l.full_name}</td>
-                      <td>{l.grade}</td>
-                      <td style={{color:'var(--color-text-secondary)'}}>{l.email || '—'}</td>
-                      <td style={{color:'var(--color-text-secondary)'}}>
-                        {new Date(l.created_at).toLocaleDateString('en-GB')}
-                      </td>
-                      <td>
-                        <button className="btn btn-red btn-sm" onClick={() => handleDeleteLearner(l.id)}>
-                          <i className="ti ti-trash" />
-                        </button>
-                      </td>
-                    </tr>
+                    l.id === editingId ? (
+                      <tr key={l.id}>
+                        <td><input value={editForm.fullName} onChange={e => setEditForm(f=>({...f,fullName:e.target.value}))} /></td>
+                        <td>
+                          <select value={editForm.grade} onChange={e => setEditForm(f=>({...f,grade:e.target.value}))}>
+                            <option>Grade 10</option><option>Grade 11</option><option>Grade 12</option>
+                          </select>
+                        </td>
+                        <td><input value={editForm.email} onChange={e => setEditForm(f=>({...f,email:e.target.value}))} /></td>
+                        <td></td>
+                        <td style={{display:'flex', gap:'6px'}}>
+                          <button className="btn btn-navy btn-sm" onClick={() => handleSaveLearner(l.id)}>Save</button>
+                          <button className="btn btn-sm" onClick={() => setEditingId(null)}>Cancel</button>
+                        </td>
+                      </tr>
+                    ) : (
+                      <tr key={l.id}>
+                        <td>{l.full_name}</td>
+                        <td>{l.grade}</td>
+                        <td style={{color:'var(--color-text-secondary)'}}>{l.email || '—'}</td>
+                        <td style={{color:'var(--color-text-secondary)'}}>
+                          {new Date(l.created_at).toLocaleDateString('en-GB')}
+                        </td>
+                        <td>
+                          <div style={{display:'flex', gap:'6px'}}>
+                            <button className="btn btn-sm" onClick={() => handleEditLearner(l)}>
+                              <i className="ti ti-pencil" />
+                            </button>
+                            <button className="btn btn-red btn-sm" onClick={() => handleDeleteLearner(l.id)}>
+                              <i className="ti ti-trash" />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    )
                   ))}
                 </tbody>
               </table>
@@ -273,21 +327,39 @@ export default function AdminLearnerRegister() {
                   ) : filteredStaff
                       .filter(s => s.role === (viewTab === 'tutors' ? 'tutor' : 'parent'))
                       .map(s => (
-                    <tr key={s.id}>
-                      <td>{s.full_name}</td>
-                      <td>
-                        <span className={`role-badge role-badge-${s.role}`}>{s.role}</span>
-                      </td>
-                      <td style={{color:'var(--color-text-secondary)'}}>{s.email || '—'}</td>
-                      <td style={{color:'var(--color-text-secondary)'}}>
-                        {new Date(s.created_at).toLocaleDateString('en-GB')}
-                      </td>
-                      <td>
-                        <button className="btn btn-red btn-sm" onClick={() => handleDeleteStaff(s.id)}>
-                          <i className="ti ti-trash" />
-                        </button>
-                      </td>
-                    </tr>
+                        s.id === editingId ? (
+                          <tr key={s.id}>
+                            <td><input value={editForm.fullName} onChange={e => setEditForm(f=>({...f,fullName:e.target.value}))} /></td>
+                            <td><span className={`role-badge role-badge-${s.role}`}>{s.role}</span></td>
+                            <td><input value={editForm.email} onChange={e => setEditForm(f=>({...f,email:e.target.value}))} /></td>
+                            <td></td>
+                            <td style={{display:'flex', gap:'6px'}}>
+                              <button className="btn btn-navy btn-sm" onClick={() => handleSaveStaff(s.id)}>Save</button>
+                              <button className="btn btn-sm" onClick={() => setEditingId(null)}>Cancel</button>
+                            </td>
+                          </tr>
+                        ) : (
+                          <tr key={s.id}>
+                            <td>{s.full_name}</td>
+                            <td>
+                              <span className={`role-badge role-badge-${s.role}`}>{s.role}</span>
+                            </td>
+                            <td style={{color:'var(--color-text-secondary)'}}>{s.email || '—'}</td>
+                            <td style={{color:'var(--color-text-secondary)'}}>
+                              {new Date(s.created_at).toLocaleDateString('en-GB')}
+                            </td>
+                            <td>
+                              <div style={{display:'flex', gap:'6px'}}>
+                                <button className="btn btn-sm" onClick={() => handleEditStaff(s)}>
+                                  <i className="ti ti-pencil" />
+                                </button>
+                                <button className="btn btn-red btn-sm" onClick={() => handleDeleteStaff(s.id)}>
+                                  <i className="ti ti-trash" />
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        )
                   ))}
                 </tbody>
               </table>
