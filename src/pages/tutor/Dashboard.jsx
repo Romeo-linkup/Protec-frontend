@@ -2,17 +2,21 @@ import { useState, useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../../contexts/AuthContext.jsx';
 import api from '../../api/client.js';
+import { getCurrentTermAndYear, getYearOptions } from '../../utils/termUtils.js';
 
 export default function TutorDashboard() {
   const { user } = useContext(AuthContext);
   const navigate = useNavigate();
+  const { term: defaultTerm, year: defaultYear } = getCurrentTermAndYear();
+  const [term, setTerm] = useState(defaultTerm);
+  const [year, setYear] = useState(defaultYear);
   const [stats, setStats]     = useState({ learners: 0, captured: 0 });
   const [subjBars, setSubjBars] = useState([]);
   const [recent, setRecent]   = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    Promise.all([api.get('/learners'), api.get('/results?term=T2&year=2025')])
+    Promise.all([api.get('/learners'), api.get(`/results?term=${term}&year=${year}`)])
       .then(([l, r]) => {
         const results = r.data;
         const avg2 = (a, b) => (a == null || b == null) ? null : Math.round((a+b)/2);
@@ -23,7 +27,7 @@ export default function TutorDashboard() {
         setSubjBars([['Mathematics', mA], ['Physical Sciences', sA], ['English', eA]]);
         setRecent(results.slice(0, 5));
       }).catch(() => {}).finally(() => setLoading(false));
-  }, []);
+  }, [term, year]);
 
   const mean = arr => { const v = arr.filter(x => x != null); return v.length ? Math.round(v.reduce((a,b)=>a+b,0)/v.length) : null; };
   const avg2 = (a, b) => (a == null || b == null) ? null : Math.round((a+b)/2);
@@ -39,6 +43,15 @@ export default function TutorDashboard() {
         <div>
           <div className="topbar-title">Dashboard</div>
           <div className="topbar-sub">Welcome back, {user?.fullName?.split(' ')[0]}</div>
+          <div className="topbar-sub">{term} {year}</div>
+        </div>
+        <div style={{display:'flex',gap:'8px',alignItems:'center'}}>
+          <select className="btn btn-sm" style={{fontWeight:400}} value={term} onChange={e=>setTerm(e.target.value)}>
+            <option>T1</option><option>T2</option><option>T3</option><option>T4</option>
+          </select>
+          <select className="btn btn-sm" style={{fontWeight:400}} value={year} onChange={e=>setYear(e.target.value)}>
+            {getYearOptions().map(y=><option key={y}>{y}</option>)}
+          </select>
         </div>
         <div className="topbar-right">
           <span className="role-badge role-badge-tutor">Tutor</span>
@@ -48,14 +61,14 @@ export default function TutorDashboard() {
 
       <div className="metrics">
         <div className="mcard"><div className="mcard-label">Total learners</div><div className="mcard-val">{stats.learners}</div></div>
-        <div className="mcard"><div className="mcard-label">Results captured</div><div className="mcard-val">{stats.captured}</div><div className="mcard-sub">T2 2025</div></div>
+        <div className="mcard"><div className="mcard-label">Results captured</div><div className="mcard-val">{stats.captured}</div><div className="mcard-sub">{term} {year}</div></div>
         <div className="mcard"><div className="mcard-label">Pending</div><div className="mcard-val">{Math.max(0, stats.learners - stats.captured)}</div></div>
         <div className="mcard"><div className="mcard-label">Completion</div><div className="mcard-val">{stats.learners ? Math.round(stats.captured/stats.learners*100) : 0}%</div></div>
       </div>
 
       <div className="row2">
         <div className="card">
-          <div className="card-hd"><i className="ti ti-chart-bar"/>Subject averages — Term 2</div>
+          <div className="card-hd"><i className="ti ti-chart-bar"/>Subject averages — {term} {year}</div>
           {subjBars.map(([name, val]) => (
             <div key={name} className="pbar-wrap">
               <div className="pbar-lbl">{name}</div>

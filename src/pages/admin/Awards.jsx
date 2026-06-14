@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import api from '../../api/client.js';
+import { getCurrentTermAndYear, getYearOptions } from '../../utils/termUtils.js';
 
 const COMMENTS = {
   distinction: [
@@ -90,18 +91,28 @@ function RankList({ data, type, limit = 10 }) {
 }
 
 export default function AdminAwards() {
+  const { term: defaultTerm, year: defaultYear } = getCurrentTermAndYear();
+  const [term, setTerm] = useState(defaultTerm);
+  const [year, setYear] = useState(defaultYear);
   const [t1, setT1]         = useState([]);
   const [t2, setT2]         = useState([]);
   const [grade, setGrade]   = useState('');
   const [loading, setLoading] = useState(true);
 
+  const termOrder = ['T1','T2','T3','T4'];
+  const tIdx = termOrder.indexOf(term);
+  const prevTerm = tIdx > 0 ? termOrder[tIdx - 1] : null;
+
   useEffect(() => {
-    Promise.all([
-      api.get('/results?term=T1&year=2025'),
-      api.get('/results?term=T2&year=2025'),
-    ]).then(([r1, r2]) => { setT1(r1.data); setT2(r2.data); })
-    .catch(() => {}).finally(() => setLoading(false));
-  }, []);
+    const prevYear = (tIdx === 0 && parseInt(year) > 2025) ? String(parseInt(year) - 1) : year;
+    const fetches = [
+      prevTerm
+        ? api.get(`/results?term=${prevTerm}&year=${prevYear}`)
+        : Promise.resolve({ data: [] }),
+      api.get(`/results?term=${term}&year=${year}`),
+    ];
+    return Promise.all(fetches).then(([r1, r2]) => { setT1(r1.data); setT2(r2.data); }).catch(() => {}).finally(() => setLoading(false));
+  }, [term, year]);
 
   const overall = r => {
     const a2 = (x,y) => x!=null&&y!=null ? Math.round((x+y)/2) : null;
@@ -131,9 +142,15 @@ export default function AdminAwards() {
       <div className="topbar">
         <div>
           <div className="topbar-title">Awards &amp; recognition</div>
-          <div className="topbar-sub">Top 10 achievers and most improved — T2 2025</div>
+          <div className="topbar-sub">Top 10 achievers and most improved — ${term} ${year}</div>
         </div>
         <div className="topbar-right">
+          <select className="btn btn-sm" style={{fontWeight:400}} value={term} onChange={e=>setTerm(e.target.value)}>
+            <option>T1</option><option>T2</option><option>T3</option><option>T4</option>
+          </select>
+          <select className="btn btn-sm" style={{fontWeight:400}} value={year} onChange={e=>setYear(e.target.value)}>
+            {getYearOptions().map(y=><option key={y}>{y}</option>)}
+          </select>
           <select value={grade} onChange={e => setGrade(e.target.value)}
             style={{ fontSize:'11px', padding:'5px 8px', width:'auto' }}>
             <option value="">All grades</option>
@@ -149,7 +166,7 @@ export default function AdminAwards() {
           <RankList data={withAvg} type="achiever" />
         </div>
         <div className="card">
-          <div className="card-hd"><i className="ti ti-trending-up" />Most improved — T1→T2</div>
+          <div className="card-hd"><i className="ti ti-trending-up" />Most improved — ${prevTerm || 'N/A'}→${term}</div>
           <RankList data={improved} type="improved" />
         </div>
       </div>

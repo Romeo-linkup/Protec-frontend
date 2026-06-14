@@ -1,6 +1,7 @@
 import { useState, useEffect, useContext } from 'react';
 import { AuthContext } from '../../contexts/AuthContext.jsx';
 import api from '../../api/client.js';
+import { getCurrentTermAndYear, getYearOptions } from '../../utils/termUtils.js';
 
 const COMMENTS = {
   distinction: ["Exceptional work — you're setting the standard!","Outstanding performance. Your dedication truly shows.","Top of the class! Keep pushing those boundaries.","Brilliant results — you make Protec INK proud.","Remarkable. Stay hungry, stay focused."],
@@ -19,13 +20,29 @@ const MEDAL_CLS = ['gold','silver','bronze'];
 
 export default function LearnerAwards() {
   const { user } = useContext(AuthContext);
+  const { term: defaultTerm, year: defaultYear } = getCurrentTermAndYear();
+  const [term, setTerm] = useState(defaultTerm);
+  const [year, setYear] = useState(defaultYear);
   const [data, setData]     = useState({ t1:[], t2:[] });
   const [loading, setLoading] = useState(true);
 
+  const termOrder = ['T1','T2','T3','T4'];
+  const tIdx = termOrder.indexOf(term);
+  const prevTerm = tIdx > 0 ? termOrder[tIdx - 1] : null;
+  const prevYear = (tIdx === 0 && parseInt(year) > 2025) ? String(parseInt(year) - 1) : year;
+
   useEffect(() => {
-    api.get('/results/awards?term=T2&year=2025')
-      .then(r => setData(r.data)).catch(() => {}).finally(() => setLoading(false));
-  }, []);
+    const fetches = [
+      prevTerm
+        ? api.get(`/results?term=${prevTerm}&year=${prevYear}`)
+        : Promise.resolve({ data: [] }),
+      api.get(`/results?term=${term}&year=${year}`),
+    ];
+    Promise.all(fetches)
+      .then(([r1, r2]) => setData({ t1: r1.data, t2: r2.data }))
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, [term, year]);
 
   const overall = r => {
     const a2=(x,y)=>x!=null&&y!=null?Math.round((x+y)/2):null;
@@ -56,9 +73,15 @@ export default function LearnerAwards() {
       <div className="topbar">
         <div>
           <div className="topbar-title">Awards &amp; recognition</div>
-          <div className="topbar-sub">Top achievers and most improved — T2 2025</div>
+          <div className="topbar-sub">Top achievers and most improved — ${term} ${year}</div>
         </div>
         <div className="topbar-right">
+          <select className="btn btn-sm" style={{fontWeight:400}} value={term} onChange={e=>setTerm(e.target.value)}>
+            <option>T1</option><option>T2</option><option>T3</option><option>T4</option>
+          </select>
+          <select className="btn btn-sm" style={{fontWeight:400}} value={year} onChange={e=>setYear(e.target.value)}>
+            {getYearOptions().map(y=><option key={y}>{y}</option>)}
+          </select>
           <span className="role-badge role-badge-learner">Learner</span>
         </div>
       </div>
@@ -112,7 +135,7 @@ export default function LearnerAwards() {
         </div>
 
         <div className="card">
-          <div className="card-hd"><i className="ti ti-trending-up" />Most improved — T1→T2</div>
+          <div className="card-hd"><i className="ti ti-trending-up" />Most improved — ${prevTerm || 'N/A'}→${term}</div>
           <div style={{ display:'flex', flexDirection:'column', gap:'6px' }}>
             {improved.slice(0, 10).map((x, i) => {
               return (

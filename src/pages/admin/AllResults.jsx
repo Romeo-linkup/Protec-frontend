@@ -1,12 +1,14 @@
 import { useState, useEffect } from 'react';
 import api from '../../api/client.js';
+import { getCurrentTermAndYear, getYearOptions } from '../../utils/termUtils.js';
 
 export default function AdminAllResults() {
+  const { term: defaultTerm, year: defaultYear } = getCurrentTermAndYear();
   const [rows, setRows]       = useState([]);
   const [attRates, setAttRates] = useState({});
   const [grade, setGrade]     = useState('');
-  const [term, setTerm]       = useState('T2');
-  const [year, setYear]       = useState('2025');
+  const [term, setTerm]       = useState(defaultTerm);
+  const [year, setYear]       = useState(defaultYear);
   const [search, setSearch]   = useState('');
   const [loading, setLoading] = useState(true);
 
@@ -64,7 +66,7 @@ export default function AdminAllResults() {
           <option>T1</option><option>T2</option><option>T3</option><option>T4</option>
         </select>
         <select value={year} onChange={e=>setYear(e.target.value)}>
-          <option>2025</option><option>2026</option>
+          {getYearOptions().map(y=><option key={y}>{y}</option>)}
         </select>
         <input className="search-bar" placeholder="Search learner..."
           value={search} onChange={e=>setSearch(e.target.value)} />

@@ -1,6 +1,7 @@
 import { useState, useEffect, useContext } from 'react';
 import { AuthContext } from '../../contexts/AuthContext.jsx';
 import api from '../../api/client.js';
+import { getCurrentTermAndYear, getYearOptions } from '../../utils/termUtils.js';
 
 const REMARKS = {
   distinction: [
@@ -41,6 +42,9 @@ function getRemark(avg, seed) {
 
 export default function MyResults() {
   const { user } = useContext(AuthContext);
+  const { term: defaultTerm, year: defaultYear } = getCurrentTermAndYear();
+  const [rankTerm, setRankTerm] = useState(defaultTerm);
+  const [rankYear, setRankYear] = useState(defaultYear);
   const [results, setResults]   = useState([]);
   const [rankings, setRankings] = useState({});
   const [loading, setLoading]   = useState(true);
@@ -50,13 +54,13 @@ export default function MyResults() {
     if (!user?.learnerId) return;
     Promise.all([
       api.get(`/results/${user.learnerId}/my`),
-      api.get('/results/awards?term=T2&year=2025'),
+      api.get(`/results?term=${rankTerm}&year=${rankYear}`),
       api.get(`/attendance/rate/${user.learnerId}`),
     ]).then(([myRes, awardsRes, attRes]) => {
       setResults(myRes.data);
       setAttendance(attRes.data);
 
-      const { t2 } = awardsRes.data;
+      const t2 = awardsRes.data;
       const overall = r => {
         const a2=(x,y)=>x!=null&&y!=null?Math.round((x+y)/2):null;
         const m=a2(r.math_school,r.math_protec),s=a2(r.sci_school,r.sci_protec),e=a2(r.eng_school,r.eng_protec);
@@ -68,7 +72,7 @@ export default function MyResults() {
       const myAvg=sorted.find(r=>r.learner_id===user.learnerId)?.avg??null;
       setRankings({ rank:myRank||null, total, avg:myAvg });
     }).catch(()=>{}).finally(()=>setLoading(false));
-  }, [user]);
+  }, [user, rankTerm, rankYear]);
 
   const a2 = (a,b) => a!=null&&b!=null ? Math.round((a+b)/2) : null;
 
@@ -90,6 +94,12 @@ export default function MyResults() {
           <div className="topbar-sub">{user?.fullName}</div>
         </div>
         <div className="topbar-right">
+          <select className="btn btn-sm" style={{fontWeight:400}} value={rankTerm} onChange={e=>setRankTerm(e.target.value)}>
+            <option>T1</option><option>T2</option><option>T3</option><option>T4</option>
+          </select>
+          <select className="btn btn-sm" style={{fontWeight:400}} value={rankYear} onChange={e=>setRankYear(e.target.value)}>
+            {getYearOptions().map(y=><option key={y}>{y}</option>)}
+          </select>
           <span className="role-badge role-badge-learner">Learner</span>
         </div>
       </div>
@@ -105,7 +115,7 @@ export default function MyResults() {
                 fontSize: 13, fontWeight: 600,
                 color: rankings.avg >= 80 ? 'var(--blue-text)' : rankings.avg >= 60 ? 'var(--green-text)' : rankings.avg >= 50 ? 'var(--yellow-text)' : 'var(--red-dark)',
               }}>
-                Class ranking — #{rankings.rank} of {rankings.total}
+                Class ranking (${rankTerm} ${rankYear}) — #{rankings.rank} of {rankings.total}
               </div>
               <div style={{
                 fontSize: 11, marginTop: 5, fontStyle: 'italic',
@@ -118,7 +128,7 @@ export default function MyResults() {
               <div style={{ fontSize: 22, fontWeight: 600, color: 'var(--color-text-primary)' }}>
                 {rankings.avg}%
               </div>
-              <div style={{ fontSize: 10, color: 'var(--color-text-secondary)' }}>T2 overall avg</div>
+              <div style={{ fontSize: 10, color: 'var(--color-text-secondary)' }}>{rankTerm} {rankYear} overall avg</div>
             </div>
           </div>
         </div>

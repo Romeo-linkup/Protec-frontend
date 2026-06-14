@@ -1,9 +1,13 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../../api/client.js';
+import { getCurrentTermAndYear, getYearOptions } from '../../utils/termUtils.js';
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
+  const { term: defaultTerm, year: defaultYear } = getCurrentTermAndYear();
+  const [term, setTerm] = useState(defaultTerm);
+  const [year, setYear] = useState(defaultYear);
   const [stats, setStats] = useState({ learners: 0, captured: 0, passRate: null, topSubj: null, topAvg: null });
   const [subjBars, setSubjBars] = useState([]);
   const [gradeBreakdown, setGradeBreakdown] = useState([]);
@@ -13,7 +17,7 @@ export default function AdminDashboard() {
   useEffect(() => {
     Promise.all([
       api.get('/learners'),
-      api.get('/results?year=2025&term=T2'),
+      api.get(`/results?year=${year}&term=${term}`),
     ]).then(([l, r]) => {
       const learners = l.data;
       const results  = r.data;
@@ -60,7 +64,7 @@ export default function AdminDashboard() {
       setGradeBreakdown(breakdown);
       setAtRisk(risk);
     }).catch(() => {}).finally(() => setLoading(false));
-  }, []);
+  }, [term, year]);
 
   const avg2 = (a, b) => (a == null || b == null) ? null : Math.round((a + b) / 2);
   const overallAvg = r => {
@@ -80,7 +84,15 @@ export default function AdminDashboard() {
       <div className="topbar">
         <div>
           <div className="topbar-title">Dashboard — Protec INK</div>
-          <div className="topbar-sub">2025 academic year</div>
+          <div className="topbar-sub">{term} — {year} academic year</div>
+        </div>
+        <div style={{display:'flex',gap:'8px',alignItems:'center'}}>
+          <select className="btn btn-sm" style={{fontWeight:400}} value={term} onChange={e=>setTerm(e.target.value)}>
+            <option>T1</option><option>T2</option><option>T3</option><option>T4</option>
+          </select>
+          <select className="btn btn-sm" style={{fontWeight:400}} value={year} onChange={e=>setYear(e.target.value)}>
+            {getYearOptions().map(y=><option key={y}>{y}</option>)}
+          </select>
         </div>
         <div className="topbar-right">
           <span className="role-badge role-badge-admin">Admin</span>
@@ -96,17 +108,17 @@ export default function AdminDashboard() {
           <div className="mcard-sub">Grades 10, 11, 12</div>
         </div>
         <div className="mcard">
-          <div className="mcard-label">Results captured (T2)</div>
+          <div className="mcard-label">Results captured (${term})</div>
           <div className="mcard-val">{stats.captured}</div>
           <div className="mcard-sub">of {stats.learners} learners</div>
         </div>
         <div className="mcard">
-          <div className="mcard-label">Branch pass rate (T2)</div>
+          <div className="mcard-label">Branch pass rate (${term})</div>
           <div className="mcard-val">{stats.passRate != null ? `${stats.passRate}%` : '—'}</div>
           <div className="mcard-sub">Above 50%</div>
         </div>
         <div className="mcard">
-          <div className="mcard-label">Top subject (T2)</div>
+          <div className="mcard-label">Top subject (${term})</div>
           <div className="mcard-val" style={{fontSize:14,paddingTop:4}}>{stats.topSubj || '—'}</div>
           <div className="mcard-sub">{stats.topAvg != null ? `${stats.topAvg}% avg` : '—'}</div>
         </div>
@@ -114,7 +126,7 @@ export default function AdminDashboard() {
 
       <div className="row2">
         <div className="card">
-          <div className="card-hd"><i className="ti ti-chart-bar"/>Subject averages — Term 2</div>
+          <div className="card-hd"><i className="ti ti-chart-bar"/>Subject averages — {term} {year}</div>
           {subjBars.map(([name, val]) => (
             <div key={name} className="pbar-wrap">
               <div className="pbar-lbl">{name}</div>
@@ -134,7 +146,7 @@ export default function AdminDashboard() {
         </div>
 
         <div className="card">
-          <div className="card-hd"><i className="ti ti-users"/>Grade breakdown — Term 2</div>
+          <div className="card-hd"><i className="ti ti-users"/>Grade breakdown — {term} {year}</div>
           <table>
             <thead><tr><th>Grade</th><th>Learners</th><th>Avg mark</th><th>Pass rate</th></tr></thead>
             <tbody>
@@ -152,7 +164,7 @@ export default function AdminDashboard() {
       </div>
 
       <div className="card">
-        <div className="card-hd"><i className="ti ti-alert-triangle"/>At-risk learners — below 50% in any subject (T2)</div>
+        <div className="card-hd"><i className="ti ti-alert-triangle"/>At-risk learners — below 50% in any subject ({term} {year})</div>
         {atRisk.length === 0
           ? <div className="no-data">No at-risk learners. Great work!</div>
           : (
