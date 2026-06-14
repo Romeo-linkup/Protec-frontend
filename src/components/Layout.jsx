@@ -111,14 +111,19 @@ export default function Layout() {
         <div className="sidebar">
           <div className="sb-top">
             <div className="sb-logo">
-              <svg width="26" height="30" viewBox="0 0 28 32" fill="none">
-                <path d="M14 1L2 6V16C2 23 8 29 14 31C20 29 26 23 26 16V6L14 1Z" fill="#1a2d5a" stroke="rgba(255,255,255,0.15)" strokeWidth="0.5"/>
-                <path d="M14 3.5L4 8V16C4 22 9 27.5 14 29.2C19 27.5 24 22 24 16V8L14 3.5Z" fill="#c8102e"/>
-                <text x="14" y="20" textAnchor="middle" fontSize="10" fontWeight="bold" fill="white" fontFamily="sans-serif">P</text>
-              </svg>
+              <img
+                src="/icons/protec-icon-48x48.png"
+                alt="Protec"
+                style={{ width: 36, height: 36, borderRadius: 6, flexShrink: 0 }}
+              />
               <div>
-                <div className="sb-wordmark">PRO<em>TEC</em></div>
-                <div className="sb-branch">{branch}</div>
+                <div className="sb-wordmark">
+                  <span style={{ color: '#ffffff' }}>PRO</span>
+                  <span style={{ color: '#56b4e9' }}>TEC</span>
+                  {' '}
+                  <span style={{ color: '#c8102e' }}>INK</span>
+                </div>
+                <div className="sb-branch">Technological Careers</div>
               </div>
             </div>
           </div>
