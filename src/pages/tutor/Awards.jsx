@@ -60,6 +60,7 @@ export default function TutorAwards() {
   const prevTerm = tIdx > 0 ? termOrder[tIdx - 1] : null;
 
   useEffect(() => {
+    setLoading(true);
     const prevYear = (tIdx === 0 && parseInt(year) > 2025) ? String(parseInt(year) - 1) : year;
     const fetches = [
       prevTerm
@@ -67,7 +68,7 @@ export default function TutorAwards() {
         : Promise.resolve({ data: [] }),
       api.get(`/results?term=${term}&year=${year}`),
     ];
-    return Promise.all(fetches).then(([r1, r2]) => { setT1(r1.data); setT2(r2.data); }).catch(() => {}).finally(() => setLoading(false));
+    Promise.all(fetches).then(([r1, r2]) => { setT1(r1.data); setT2(r2.data); }).catch(() => {}).finally(() => setLoading(false));
   }, [term, year]);
 
   const overall = r => {
