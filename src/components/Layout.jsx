@@ -119,11 +119,11 @@ export default function Layout() {
               <div>
                 <div className="sb-wordmark">
                   <span style={{ color: '#ffffff' }}>PRO</span>
-                  <span style={{ color: '#56b4e9' }}>TEC</span>
+                  <span style={{ color: '#f3f6f8' }}>TEC</span>
                   {' '}
                   <span style={{ color: '#c8102e' }}>INK</span>
                 </div>
-                <div className="sb-branch">Technological Careers</div>
+                <div className="sb-branch">Programme for Technological Careers</div>
               </div>
             </div>
           </div>
