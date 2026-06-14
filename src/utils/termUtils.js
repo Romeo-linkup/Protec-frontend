@@ -1,17 +1,28 @@
-/**
- * Returns the current SA school term and year based on the system clock.
- * Jan–Mar = T1, Apr–Jun = T2, Jul–Sep = T3, Oct–Dec = T4
- */
 export function getCurrentTermAndYear() {
   const now = new Date();
-  const month = now.getMonth() + 1; // 1-indexed
-  const year = String(now.getFullYear());
-  let term;
-  if (month <= 3) term = 'T1';
-  else if (month <= 6) term = 'T2';
-  else if (month <= 9) term = 'T3';
-  else term = 'T4';
-  return { term, year };
+  const month = now.getMonth() + 1;
+  const year = now.getFullYear();
+
+  // Determine current SA school term
+  let currentTerm;
+  if (month <= 3) currentTerm = 1;
+  else if (month <= 6) currentTerm = 2;
+  else if (month <= 9) currentTerm = 3;
+  else currentTerm = 4;
+
+  // Default to PREVIOUS term (what has results)
+  let prevTermNum = currentTerm - 1;
+  let prevYear = year;
+
+  if (prevTermNum < 1) {
+    prevTermNum = 4;
+    prevYear = year - 1;
+  }
+
+  return {
+    term: `T${prevTermNum}`,
+    year: String(prevYear),
+  };
 }
 
 /**
